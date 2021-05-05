@@ -54,7 +54,8 @@ This ensures that the added variants are realistic (not random locations).
 
 For example, to add [gnomad-sv calls](https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd166.GRCh37.variant_call.vcf.gz) to the Genome in a bottle truth set, use:
 ```
-tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
+tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz \
+	     | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
 ```
 
 Now we can re-try our random classifer with the following results:
