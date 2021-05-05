@@ -1,5 +1,15 @@
 This software adds true-negative SVs to a truth-set. The true-negatives should be drawn from a real set.
 
+In short you can use like this:
+```
+wget https://github.com/brentp/tnsv/releases/download/v0.0.1/tnsv
+chmod +x ./tnsv
+#      truth-set                    population-set
+./tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
+```
+
+And many hom-ref (genotype 0/0) calls will be added to the truth-set (in this case, the output is `HG002_SVS.with-gnomad-TN.vcf.gz`)
+
 # Problem
 
 This is a basic, known data-science problem, but it can still catch even seasoned analysts and it's especially
