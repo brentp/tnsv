@@ -4,11 +4,14 @@ In short you can use like this:
 ```
 wget https://github.com/brentp/tnsv/releases/download/v0.0.1/tnsv
 chmod +x ./tnsv
-#      truth-set                    population-set
-./tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
+./tnsv sv-truth-set.vcf.gz population-sv-calls.vcf.gz \
+	| bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
 ```
 
 And many hom-ref (genotype 0/0) calls will be added to the truth-set (in this case, the output is `HG002_SVS.with-gnomad-TN.vcf.gz`)
+These calls will be in realistic locations (compared to random locations).
+
+See [below](#true-negative-sets) for links to some possible population call-sets.
 
 # Problem
 
