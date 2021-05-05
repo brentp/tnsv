@@ -60,7 +60,7 @@ tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz | bcftools s
 Now we can re-try our random classifer with the following results:
 
 + 96% Recall (which must be the case)
-+ 15% Precision
++ 15% Precision (down from 82% on the original truth-set)
 
 With this, we have a such a low precision that we should note that something is wrong.
 
