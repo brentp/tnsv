@@ -17,7 +17,7 @@ proc stop(e:expanded_sv): int {.inline.} = return e.stop
 template stripChr*[T:string|cstring](s:T): string =
   if s.len > 3 and ($s).startswith("chr"): ($s)[3..<s.len] else: $s
 
-proc tpsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_dist:int=100) =
+proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_dist:int=100) =
   var
     tvcf:VCF
     pvcf:VCF
@@ -25,6 +25,7 @@ proc tpsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
     quit &"couldn't open truth_vcf: {truth_vcf}"
   if not pvcf.open(pop_vcf):
     quit &"couldn't open pop_vcf: {pop_vcf}"
+  pvcf.set_samples(@[])
 
   for sample in tvcf.samples:
     doAssert pvcf.header.hdr.bcf_hdr_add_sample(sample) >= 0
@@ -111,7 +112,7 @@ proc main() =
     arg("pop_vcf", help="population VCF")
   try:
     var opts = p.parse()
-    tpsv(opts.truth_vcf, opts.pop_vcf, output_vcf=opts.output_vcf, min_dist=parseInt(opts.min_dist))
+    tnsv(opts.truth_vcf, opts.pop_vcf, output_vcf=opts.output_vcf, min_dist=parseInt(opts.min_dist))
   except UsageError as e:
     stderr.write_line(p.help)
     stderr.write_line(getCurrentExceptionMsg())
