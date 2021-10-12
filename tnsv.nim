@@ -25,10 +25,11 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
     quit &"couldn't open truth_vcf: {truth_vcf}"
   if not pvcf.open(pop_vcf):
     quit &"couldn't open pop_vcf: {pop_vcf}"
-  pvcf.set_samples(@[])
+  let tvcf_samples = tvcf.samples
+  pvcf.set_samples(@["^"])
 
-  for sample in tvcf.samples:
-    doAssert pvcf.header.hdr.bcf_hdr_add_sample(sample) >= 0
+  #for sample in tvcf.samples:
+  #  doAssert pvcf.header.hdr.bcf_hdr_add_sample(sample) >= 0
   discard pvcf.header.hdr.bcf_hdr_sync()
 
   var th = tvcf.header.hdr
@@ -44,7 +45,6 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
     quit &"couldn't open output_vcf: {output_vcf}"
   ovcf.header = Header(hdr:mh)
   doAssert ovcf.write_header
-
 
   # read truth vcf into lapper
   var truth = newTable[string, seq[expanded_sv]]()
@@ -63,7 +63,6 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
   var res = newSeq[expanded_sv]()
   var overlapping = 0
   var new_variants = 0
-  var samples = pvcf.samples
   for v in pvcf:
     res.setLen(0)
 
@@ -73,21 +72,22 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
       continue
 
     if res.len == 0:
-      var vs = @[v.tostring().strip()]
+      var vs = v.tostring().strip().split("\t")
       if $v.CHROM notin chrs:
         # try to match chroms between truth and pop set.
         var vc = $v.CHROM
         if vc.startsWith("chr") and stripChr(vc) in chrs:
-          vs = v.tostring().strip().split("\t")
           vs[0] = stripchr(vc)
         elif "chr" & vc in chrs:
-          vs = v.tostring().strip().split("\t")
           vs[0] = "chr" & vc
 
+      if vs.len >= 10:
+        vs = vs[0..<8]
+
       # HACK since I don't know how to add new fields to variant record
-      for s in pvcf.samples:
-        vs.add("\tGT\t0/0")
-      var s = vs.join("")
+      for s in tvcf_samples:
+        vs.add("GT\t0/0")
+      var s = vs.join("\t")
       var ks = kstring_t(s:s, l:s.len.csize_t, m:s.len.csize_t)
       doAssert 0 == vcf_parse(ks.addr, mh, v.c)
       doAssert ovcf.write_variant(v)
