@@ -17,6 +17,9 @@ type expanded_sv = object
 proc start(e:expanded_sv): int {.inline.} = return e.start
 proc stop(e:expanded_sv): int {.inline.} = return e.stop
 
+proc key(v:Variant): string =
+  return &"{v.CHROM}/{v.start}/{v.REF}/{v.ALT[0]}"
+
 template stripChr*[T:string|cstring](s:T): string =
   if s.len > 3 and ($s).startswith("chr"): ($s)[3..<s.len] else: $s
 
@@ -67,6 +70,7 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
 
   # now iterate over pop and add any variant that doesn't overlap.
   var res = newSeq[expanded_sv]()
+  var seen = initHashSet[string]()
   var overlapping = 0
   var new_variants = 0
   for v in pvcf:
@@ -80,6 +84,10 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
     if res.len != 0:
       overlapping += 1
       continue
+
+    var key = v.key
+    if key in seen: continue
+    seen.incl(key)
 
     # new TN variant to add
     var vs = v.tostring().strip().split("\t")
