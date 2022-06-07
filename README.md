@@ -4,8 +4,9 @@ In short you can use like this:
 ```
 wget https://github.com/brentp/tnsv/releases/download/v0.0.1/tnsv
 chmod +x ./tnsv
-./tnsv sv-truth-set.vcf.gz population-sv-calls.vcf.gz \
-	| bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
+./tnsv sv-truth-set.vcf.gz \
+       population-sv-calls.vcf.gz \
+    | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
 ```
 
 And many **non-overlapping** hom-ref (genotype 0/0) calls will be added to the truth-set (in this case, the output is `HG002_SVS.with-gnomad-TN.vcf.gz`)
@@ -54,7 +55,9 @@ This ensures that the added variants are realistic (not random locations).
 
 For example, to add [gnomad-sv calls](https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd166.GRCh37.variant_call.vcf.gz) to the Genome in a bottle truth set, use:
 ```
-tnsv HG002_SVs_Tier1_v0.6.vcf.gz nstd166.GRCh37.variant_call.vcf.gz \
+# tnsv $truthset $populationset > $augmented_truth_set
+tnsv HG002_SVs_Tier1_v0.6.vcf.gz \
+           nstd166.GRCh37.variant_call.vcf.gz \
 	     | bcftools sort -O z -o HG002_SVS.with-gnomad-TN.vcf.gz
 ```
 
