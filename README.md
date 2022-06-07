@@ -2,7 +2,7 @@ This software adds true-negative SVs to a truth-set. The true-negatives should b
 
 In short you can use like this:
 ```
-wget https://github.com/brentp/tnsv/releases/download/v0.0.1/tnsv
+wget https://github.com/brentp/tnsv/releases/download/v0.0.5/tnsv
 chmod +x ./tnsv
 ./tnsv sv-truth-set.vcf.gz \
        population-sv-calls.vcf.gz \
