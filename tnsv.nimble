@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.0.5"
+version       = "0.0.6"
 author        = "Brent Pedersen"
 description   = "add true-negatives to an SV truth-set"
 license       = "MIT"

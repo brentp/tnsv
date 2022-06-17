@@ -23,7 +23,7 @@ proc key(v:Variant): string =
 template stripChr*[T:string|cstring](s:T): string =
   if s.len > 3 and ($s).startswith("chr"): ($s)[3..<s.len] else: $s
 
-proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_dist:int=100, max_tn_variants:int= -1) =
+proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_dist:int=100, max_tn_variants:int= -1, svtypes:seq[string]= @[]) =
   var
     tvcf:VCF
     pvcf:VCF
@@ -57,7 +57,11 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
 
   # read truth vcf into lapper
   var truth = newTable[string, seq[expanded_sv]]()
+  var svt: string
   for variant in tvcf:
+    discard variant.info.get("SVTYPE", svt)
+    if svtypes.len > 0 and svt notin svtypes: continue
+
     discard truth.hasKeyOrPut(stripChr(variant.CHROM), newSeq[expanded_sv]())
     var e = expanded_sv(start: max(0, variant.start.int - min_dist), stop: variant.stop.int + min_dist)
     truth[stripChr(variant.CHROM)].add(e)
@@ -75,6 +79,9 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
   var new_variants = 0
   for v in pvcf:
     res.setLen(0)
+
+    discard v.info.get("SVTYPE", svt)
+    if svtypes.len > 0 and svt notin svtypes: continue
 
     try:
       tr[stripChr(v.CHROM)].find(v.start.int, v.stop.int, res)
@@ -124,6 +131,7 @@ proc tnsv(truth_vcf:string, pop_vcf:string, output_vcf:string="/dev/null", min_d
     tn_variants = tn_variants[0..<min(tn_variants.len, max_tn_variants)]
     for v in tn_variants:
       doAssert ovcf.write_variant(v)
+    stderr.write_line "new variants added:", tn_variants.len
   else:
       stderr.write_line "new variants added:", new_variants
 
@@ -136,13 +144,14 @@ proc main() =
     help("add population SVs as realistic true negatives (0/0 genotypes) to an existing truth-set")
     option("-m", "--min-dist", default="100", help="only include SVs from `pop_vcf` that are at least this far from the closes variant in `truth_vcf`")
     option("-n", "--max-tn-variants", default="-1", help="maximum number of TN variants to add (0 or less means add all from the truth-vcf)")
-    #option("-i", "--include-types", default="CNV,INS,INV,DEL,DUP", help="only include SVs from `pop_vcf` that have one of these SVTYPES")
+    option("-i", "--include-types", default="CNV,INS,INV,DEL,DUP", help="only include SVs from `pop_vcf` that have one of these SVTYPES")
     option("-o", "--output-vcf", default="/dev/stdout", help="path for output truth vcf with new 0/0 variants added")
     arg("truth_vcf", help="VCF of SV truth-set")
     arg("pop_vcf", help="population VCF")
   try:
     var opts = p.parse()
-    tnsv(opts.truth_vcf, opts.pop_vcf, output_vcf=opts.output_vcf, min_dist=parseInt(opts.min_dist), max_tn_variants=parseInt(opts.max_tn_variants))
+    let types = opts.include_types.strip().split(",")
+    tnsv(opts.truth_vcf, opts.pop_vcf, output_vcf=opts.output_vcf, min_dist=parseInt(opts.min_dist), max_tn_variants=parseInt(opts.max_tn_variants), svtypes=types)
   except UsageError as e:
     #stderr.write_line($e)
     stderr.write_line(p.help)
